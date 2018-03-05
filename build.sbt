@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Fabrizio Colonna
+ * Copyright (C) 2018 Fabrizio Colonna
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import wartremover.WartRemover.autoImport._
 
 name := "TankWar"
 version := "2.0.0"
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.4"
 mainClass in Compile := Some("com.colofabrix.scala.tankwar.TankWar")
 fork := true
 
@@ -40,8 +40,8 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   // Scalaz
-  "org.scalaz" %% "scalaz-core" % "7.2.10",
-  "org.scalaz" %% "scalaz-effect" % "7.2.10",
+  "org.scalaz" %% "scalaz-core" % "7.2.20",
+  "org.scalaz" %% "scalaz-effect" % "7.2.20",
 
   // Genetic Algorithms (A fork of the Watchmaker framework is included in another file)
   //"org.uncommons" % "uncommons-maths" % "1.2",
@@ -61,11 +61,11 @@ libraryDependencies ++= Seq(
   //"com.github.wookietreiber" %% "scala-chart" % "latest.integration",
 
   // Logging
-  "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
 
   // Utilities
-  "com.typesafe" % "config" % "latest.integration",
+  "com.typesafe" % "config" % "1.3.2",
   //"org.scala-lang.modules" %% "scala-pickling" % "latest.integration",
   //"com.github.scopt" %% "scopt" % "latest.integration",
 
@@ -170,11 +170,9 @@ SbtScalariform.scalariformSettings ++ Seq(
 
 wartremoverExcluded ++= (sourceDirectory.value ** "*old*" ** "*.scala").get
 wartremoverErrors in (Compile, compile) ++= Seq(
-  Wart.Any2StringAdd,
   Wart.AsInstanceOf,
   Wart.EitherProjectionPartial,
   //Wart.IsInstanceOf,
-  Wart.ListOps,
   Wart.Nothing,
   Wart.Null,
   Wart.OptionPartial,
@@ -182,7 +180,6 @@ wartremoverErrors in (Compile, compile) ++= Seq(
   Wart.Serializable
 )
 wartremoverWarnings in (Compile, compile) ++= Seq(
-  Wart.Any2StringAdd,
   Wart.EitherProjectionPartial,
   Wart.Enumeration,
   Wart.FinalCaseClass,
@@ -197,7 +194,5 @@ wartremoverWarnings in (Compile, compile) ++= Seq(
 
 coverageMinimum := 75
 coverageFailOnMinimum := true
-
-cpdSettings
 
 com.markatta.sbttaglist.TagListPlugin.tagListSettings
