@@ -16,15 +16,16 @@
 
 package com.colofabrix.scala.tankwar.managers
 
-import scalaz.State
-import com.colofabrix.scala.physix.shapes.Box
 import com.colofabrix.scala.gfx.Keyboard
 import com.colofabrix.scala.gfx.Keyboard._
 import com.colofabrix.scala.math.XYVect
+import com.colofabrix.scala.physix.shapes.Box
 import com.colofabrix.scala.tankwar.Configuration.{ Graphics => GfxConfig, World => WorldConfig }
 import com.colofabrix.scala.tankwar.SimState
 import com.typesafe.scalalogging.LazyLogging
 import org.lwjgl.input.Keyboard._
+
+import scalaz.State
 
 /**
   * Manages keyboard actions for the game
@@ -51,35 +52,60 @@ object KeyboardManager extends Manager[SimState] with LazyLogging {
       // Scroll viewport
       _ <- OnKeyDown(KEY_W) { state: SimState =>
         logger.info(s"KEY_W pressed: Move viewport up.")
-        val vp = state.display.viewport.move(XYVect(0.0, 0.5 * state.display.viewport.height) / GfxConfig.fps)
-        state.copy(display = state.display.copy(viewport = vp))
+        if( state.display.viewport.top < WorldConfig.Arena.height ) {
+          val vp = state.display.viewport.move( XYVect( 0.0, 0.5 * state.display.viewport.height ) / GfxConfig.fps )
+          state.copy( display = state.display.copy( viewport = vp ) )
+        }
+        else {
+          state
+        }
       }
       _ <- OnKeyDown(KEY_A) { state: SimState =>
         logger.info(s"KEY_A pressed: Move viewport left.")
-        val vp = state.display.viewport.move(XYVect(-0.5 * state.display.viewport.width, 0.0) / GfxConfig.fps)
-        state.copy(display = state.display.copy(viewport = vp))
+        if( state.display.viewport.left > 0.0 ) {
+          val vp = state.display.viewport.move( XYVect( -0.5 * state.display.viewport.width, 0.0 ) / GfxConfig.fps )
+          state.copy( display = state.display.copy( viewport = vp ) )
+        }
+        else {
+          state
+        }
       }
       _ <- OnKeyDown(KEY_S) { state: SimState =>
         logger.info(s"KEY_S pressed: Move viewport down.")
-        val vp = state.display.viewport.move(XYVect(0.0, -0.5 * state.display.viewport.height) / GfxConfig.fps)
-        state.copy(display = state.display.copy(viewport = vp))
+        if( state.display.viewport.bottom > 0.0 ) {
+          val vp = state.display.viewport.move( XYVect( 0.0, -0.5 * state.display.viewport.height ) / GfxConfig.fps )
+          state.copy( display = state.display.copy( viewport = vp ) )
+        }
+        else {
+          state
+        }
       }
       _ <- OnKeyDown(KEY_D) { state: SimState =>
         logger.info(s"KEY_D pressed: Move viewport right.")
-        val vp = state.display.viewport.move(XYVect(0.5 * state.display.viewport.width, 0.0) / GfxConfig.fps)
-        state.copy(display = state.display.copy(viewport = vp))
+        if( state.display.viewport.right < WorldConfig.Arena.width ) {
+          val vp = state.display.viewport.move( XYVect( 0.5 * state.display.viewport.width, 0.0 ) / GfxConfig.fps )
+          state.copy( display = state.display.copy( viewport = vp ) )
+        }
+        else {
+          state
+        }
       }
 
       // Zoom viewport
       _ <- OnKeyDown(KEY_Q) { state: SimState =>
         logger.info(s"KEY_Q pressed: Zoom viewport in.")
-        val vp = state.display.viewport.scale(1.0 + 1.0 / GfxConfig.fps)
-        state.copy(display = state.display.copy(viewport = vp))
+        if( state.display.viewport.width <= WorldConfig.Arena.width || state.display.viewport.height <= WorldConfig.Arena.height ) {
+          val vp = state.display.viewport.scale(1.0 + 1.0 / GfxConfig.fps)
+          state.copy(display = state.display.copy(viewport = vp))
+        }
+        else {
+          state
+        }
       }
       s <- OnKeyDown(KEY_E) { state: SimState =>
         logger.info(s"KEY_E pressed: Zoom viewport out.")
-        val vp = state.display.viewport.scale(1.0 - 1.0 / GfxConfig.fps)
-        state.copy(display = state.display.copy(viewport = vp))
+        val vp = state.display.viewport.scale( 1.0 - 1.0 / GfxConfig.fps )
+        state.copy( display = state.display.copy( viewport = vp ) )
       }
     } yield s
 

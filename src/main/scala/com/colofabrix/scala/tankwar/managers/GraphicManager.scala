@@ -16,11 +16,12 @@
 
 package com.colofabrix.scala.tankwar.managers
 
-import scalaz.State
 import com.colofabrix.scala.gfx.{ GenericRender, _ }
 import com.colofabrix.scala.tankwar.Configuration.{ Graphics => GfxConfig }
 import com.colofabrix.scala.tankwar.SimState
 import com.typesafe.scalalogging.LazyLogging
+
+import scalaz.State
 
 /**
   * Manages the display of graphics
@@ -31,6 +32,7 @@ object GraphicManager extends Manager[SimState] with LazyLogging {
     // Viewport
     OpenGL.clear()
     OpenGL.setCamera(state.display.viewport)
+    logger.info(state.display.viewport.toString())
 
     // Draw the world force field
     if (state.display.forceField)

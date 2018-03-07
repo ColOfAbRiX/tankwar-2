@@ -16,11 +16,12 @@
 
 package com.colofabrix.scala.tankwar.managers
 
-import scalaz.State
 import com.colofabrix.scala.math._
 import com.colofabrix.scala.tankwar.Configuration.{ World => WorldConfig }
 import com.colofabrix.scala.tankwar.SimState
 import com.typesafe.scalalogging.LazyLogging
+
+import scalaz.State
 
 /**
   * Manages world and the progressing of the simulation
@@ -35,14 +36,6 @@ object WorldManager extends Manager[SimState] with LazyLogging {
     val result = actions.run(state.world)
 
     ret(state.copy(world = result._1))
-  }
-
-  /** The force field present on the arena, point by point */
-  def worldForceField: VectorField = { p =>
-    XYVect(
-      -75.0 * (p.y / WorldConfig.Arena.height - 0.5),
-      -75.0 * (p.x / WorldConfig.Arena.width - 0.5)
-    )
   }
 
   /** The friction present on the arena, point by point */
