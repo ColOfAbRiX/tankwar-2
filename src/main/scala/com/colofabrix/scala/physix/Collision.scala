@@ -16,6 +16,7 @@
 
 package com.colofabrix.scala.physix
 
+import com.colofabrix.scala.math.VectUtils._
 import com.colofabrix.scala.math._
 import com.colofabrix.scala.physix.shapes._
 
@@ -24,12 +25,42 @@ trait Collision {
   def flip(): Collision
 }
 
-final case class Overlap(normal: Vect, distance: Double) extends Collision {
-  override def flip(): Collision = this.copy(normal = normal * -1.0)
+/**
+  * When two shapes penetrate each other
+  * @param normal Collision normal
+  * @param distance Penetration distance
+  */
+final case class Overlap(
+  normal: Vect,
+  distance: Double,
+  thisShape: Shape,
+  thatShape: Shape
+) extends Collision {
+  override def flip(): Collision = this.copy(
+    normal = normal * -1.0,
+    thisShape = this.thatShape,
+    thatShape = this.thisShape
+  )
+
+  override def toString: String = s"Overlap(normal=$normal, penetration=$distance, this=$thisShape, that=$thatShape)"
 }
 
-final case class Separate(normal: Vect, distance: Double) extends Collision {
-  override def flip(): Collision = this.copy(normal = normal * -1.0)
+/**
+  * When two shapes do not penetrate each other
+  * @param distance Distance as vector
+  */
+final case class Separate(
+  distance: Vect,
+  thisShape: Shape,
+  thatShape: Shape
+) extends Collision {
+  override def flip(): Collision = this.copy(
+    distance = distance * -1.0,
+    thisShape = this.thatShape,
+    thatShape = this.thisShape
+  )
+
+  override def toString: String = s"Separate(distance=$distance, this=$thisShape, that=$thatShape)"
 }
 
 /**
@@ -38,55 +69,70 @@ final case class Separate(normal: Vect, distance: Double) extends Collision {
 object Collision {
 
   /** Detects if two shapes collide */
-  def check(s1: Shape, s2: Shape): Collision = s1 match {
-    case c1: Circle => s2 match {
-      case c2: Circle => checkCircleCircle(c1, c2)
-      case b2: Box => checkCircleBox(c1, b2)
-      case l2: Line => checkCircleLine(c1, l2)
+  def check(thisShape: Shape, thatShape: Shape): Collision = thisShape match {
+    case thisCircle: Circle => thatShape match {
+      case thatCircle: Circle => checkCircleCircle(thisCircle, thatCircle)
+      case thatBox: Box => checkCircleBox(thisCircle, thatBox)
+      case thatLine: Line => check(thisCircle, thatLine).flip()
     }
-    case b1: Box => s2 match {
-      case c2: Circle => checkCircleBox(c2, b1).flip()
-      case b2: Box => checkBoxBox(b1, b2)
-      case l2: Line => checkBoxLine(b1, l2)
+    case thisBox: Box => thatShape match {
+      case thatCircle: Circle => check(thatCircle, thisBox).flip()
+      case thatBox: Box => checkBoxBox(thisBox, thatBox)
+      case thatLine: Line => checkBoxLine(thisBox, thatLine)
     }
-    case l1: Line => s2 match {
-      case c2: Circle => checkCircleLine(c2, l1).flip()
-      case b2: Box => checkBoxLine(b2, l1).flip()
-      case l2: Line => checkLineLine(l1, l2)
+    case thisLine: Line => thatShape match {
+      case thatCircle: Circle => checkLineCircle(thisLine, thatCircle)
+      case thatBox: Box => check(thatBox, thisLine).flip()
+      case thatBox: Line => checkLineLine(thisLine, thatBox)
     }
   }
 
-  private def checkCircleBox(circle: Circle, box: Box): Collision = {
-    val c2c = box.center - circle.center
+  /**
+    * Distance from a Circle to a Box
+    */
+  private def checkCircleBox(thisCircle: Circle, thatBox: Box): Collision = {
+    val c2c = thatBox.center - thisCircle.center
     val b2c = XYVect(
-      Math.max(c2c.x, box.width / 2.0),
-      Math.max(c2c.y, box.height / 2.0)
+      Math.max(c2c.x, thatBox.width / 2.0),
+      Math.max(c2c.y, thatBox.height / 2.0)
     )
-    val d = b2c.ρ - circle.radius
+    val d = b2c.ρ - thisCircle.radius
 
-    if (d <~ 0.0)
-      Overlap(b2c.n, d)
-    else
-      Separate(b2c.n, d)
+    if (d <~ 0.0) {
+      Overlap( b2c.n, d, thisCircle, thatBox )
+    }
+    else {
+      Separate( d * b2c.n, thisCircle, thatBox )
+    }
   }
 
-  private def checkCircleCircle(circle1: Circle, circle2: Circle): Collision = {
-    val c2c = circle1.center - circle2.center
-    val d = c2c.ρ - (circle1.radius + circle2.radius)
+  /**
+    * Distance from a Circle to a Circle
+    */
+  private def checkCircleCircle(thisCircle: Circle, thatCircle: Circle): Collision = {
+    val c2c = thisCircle.center - thatCircle.center
+    val d = c2c.ρ - (thisCircle.radius + thatCircle.radius)
 
-    if (d <~ 0.0)
-      Overlap(c2c.v, d)
-    else
-      Separate(c2c.v, d)
+    if (d <~ 0.0) {
+      Overlap( c2c.v, d, thisCircle, thatCircle )
+    }
+    else {
+      Separate( d * c2c.v, thisCircle, thatCircle )
+    }
   }
 
-  private def checkCircleLine(circle: Circle, line: Line): Collision = {
-    val d = line.distance(circle.center) - circle.radius
+  /**
+    * Distance from a Line to a Circle
+    */
+  private def checkLineCircle(thisLine: Line, thatCircle: Circle): Collision = {
+    val d2c = thisLine.distance(thatCircle.center)
 
-    if (d <~ 0.0)
-      Overlap(line.normal, d)
-    else
-      Separate(line.normal, d)
+    if (d2c.ρ <~ thatCircle.radius) {
+      Overlap( d2c.v, d2c.ρ, thisLine, thatCircle )
+    }
+    else {
+      Separate( d2c - thatCircle.radius * d2c.n, thisLine, thatCircle )
+    }
   }
 
   private def checkBoxBox(box1: Box, box2: Box): Collision = ???

@@ -16,7 +16,6 @@
 
 package com.colofabrix.scala.physix.shapes
 
-import scalaz.\/
 import com.colofabrix.scala.math.Vect
 import com.colofabrix.scala.physix.Collision
 import com.colofabrix.scala.utils.EasyEquatable
@@ -36,7 +35,7 @@ trait Shape extends EasyEquatable[Shape] {
     * there is a collision, the right disjunction if there is no
     * collision.
     */
-  def collision(s: Shape): Collision = Collision.check(this, s)
+  def collision(that: Shape): Collision = Collision.check(this, that)
 
   /** Moves a shape of the given vector. */
   def move(v: Vect): Shape

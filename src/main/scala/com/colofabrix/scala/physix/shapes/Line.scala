@@ -23,7 +23,7 @@ import com.colofabrix.scala.math.{ DoubleWithAlmostEquals, Vect, XYVect }
   */
 class Line private (
     val normal: Vect,
-    val distance: Double
+    val point: Vect
 ) extends Shape {
 
   require(normal != Vect.zero, "A line must be defined with a non-zero normal.")
@@ -32,30 +32,30 @@ class Line private (
   val m: Double = -(normal.x / normal.y)
 
   /** Parameter "q" of the line equation y = mx + q */
-  val q: Double = -distance / normal.y
+  val q: Double = -m * point.x + point.y
 
   /** Distance of a point from the line. */
-  def distance(v: Vect): Double = ((normal ∙ v) + distance).abs
+  def distance(v: Vect): Vect = normal * ((v - point) ∙ normal)
 
   /** Line equation. */
   def equation(x: Double): Vect = XYVect(x, m * x + q)
 
-  /** Known point on the line. */
-  val p: Vect = equation(0.0)
-
   /** Clip the line into a segment fully contained in a Box. */
   def clip(frame: Box): Option[Segment] = {
-    val seg = if (m ==~ 0.0)
+    val seg = if (normal.y ==~ 0.0)
+      // When the line is horizontal
       Segment(
-        XYVect(frame.left, p.y),
-        XYVect(frame.right, p.y)
+        XYVect(frame.left, point.y),
+        XYVect(frame.right, point.y)
       )
-    else if (m.abs ==~ Double.PositiveInfinity)
+    else if (normal.x ==~ 0.0)
+      // When the line is vertical
       Segment(
-        XYVect(distance, frame.bottom),
-        XYVect(distance, frame.top)
+        XYVect(point.x, frame.bottom),
+        XYVect(point.x, frame.top)
       )
     else
+      // Other cases
       Segment(
         equation(frame.left),
         equation(frame.right)
@@ -66,22 +66,19 @@ class Line private (
 
   override val area: Double = 0.0
 
-  override def move(where: Vect): Line = Line(normal, distance + (normal ∙ where))
+  override def move(where: Vect): Line = Line(normal, point + where)
 
   override def scale(k: Double): Shape = this
 
-  override def toString = s"Line((${normal.x}, ${normal.y}) / $distance)"
+  override def toString = s"Line((${normal.x}, ${normal.y}) / (${point.x}, ${point.y}))"
 
-  override def idFields: Seq[Any] = Seq(normal, distance)
+  override def idFields: Seq[Any] = Seq(normal, point)
 
   override def canEqual(a: Any): Boolean = a.isInstanceOf[Line]
 }
 
 object Line {
-  def apply(normal: Vect, distance: Double): Line = new Line(normal.v, distance)
+  def apply(normal: Vect, distance: Double): Line = new Line(normal.v, normal * -distance)
 
-  def apply(m: Double, q: Double): Line = {
-    val k = Math.sqrt(m * m + 1)
-    Line(XYVect(m / k, -1 / k), -q / k)
-  }
+  def apply(normal: Vect, point: Vect): Line = new Line(normal.v, point)
 }

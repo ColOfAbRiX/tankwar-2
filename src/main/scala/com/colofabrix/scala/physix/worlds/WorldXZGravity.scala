@@ -35,7 +35,7 @@ final case class WorldXZGravity(
 
   override def forceField: VectorField = _ => XYVect(0.0, -9.80665)
 
-  override def friction(body: RigidBody): ScalarField = _ => Math.pow(body.velocity.ρ, 2.0) * 5.0E-4
+  override def friction(body: RigidBody): ScalarField = _ => Math.pow(body.velocity.ρ, 2.0) * 5.0E-5
 
   override def walls: Seq[Shape] = Seq(
     // Ceiling

@@ -16,12 +16,12 @@
 
 package com.colofabrix.scala.physix
 
-import scalaz._
 import com.colofabrix.scala.math.VectUtils._
 import com.colofabrix.scala.math._
 import com.colofabrix.scala.physix.shapes.Shape
 import com.colofabrix.scala.physix.worlds.World
 import com.typesafe.scalalogging.LazyLogging
+import scalaz._
 
 /**
   * Game physics, implemented using the Velocity Verlet integrator
@@ -82,7 +82,7 @@ final case class VerletPhysics() extends PhysixEngine with LazyLogging {
     val newBodies = for {
       b <- ctx.world.bodies
     } yield {
-      ctx.world.walls.foldLeft(b)(wallCollision(_, _))
+      ctx.world.walls.foldLeft(b)(wallCollision)
     }
 
     (ctx.copy(world = ctx.world.copy(bodies = newBodies)), newBodies)
@@ -90,9 +90,9 @@ final case class VerletPhysics() extends PhysixEngine with LazyLogging {
 
   private def wallCollision(b: RigidBody, w: Shape): RigidBody = {
     w.collision(b.shape) match {
-      case Overlap(n, d) =>
+      case Overlap(n, _, _, _) =>
         val v = b.velocity ∙ n
-        val r = if (d <~ 0.0 && v <~ 0.0) -2.0 * v * n else Vect.zero
+        val r = if (v <~ 0.0) -2.0 * v * n else Vect.zero
         b.move(velocity = b.velocity + r)
 
       case _ => b
