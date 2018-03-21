@@ -20,40 +20,38 @@ import com.colofabrix.scala.math.VectUtils._
 import com.colofabrix.scala.math._
 import com.colofabrix.scala.physix.RigidBody
 import com.colofabrix.scala.physix.shapes.{ Line, Shape }
-import com.colofabrix.scala.tankwar.Configuration.{ World => WorldConfig }
+import com.colofabrix.scala.tankwar.Configuration.World.Arena
 import com.typesafe.scalalogging.LazyLogging
 
 /**
   * World as a slice in the vertical plane of the real world, with gravity and static friction.
   */
-final case class WorldXZGravity(
-    bodies: Seq[RigidBody],
-    timeDelta: Double
-) extends World with LazyLogging {
-  logger.trace(s"Initializing WorldXZGravity World.")
+final case class WorldSource(bodies: Seq[RigidBody], timeDelta: Double) extends World with LazyLogging {
+
+  logger.trace(s"Initializing WorldVortex World.")
   logger.trace(s"List of bodies: $bodies")
   logger.trace(s"Time delta: $bodies")
 
-  // Constant vector field, earth-gravity like
-  override def forceField: VectorField = _ => (0.0, -9.80665)
+  // Create a hill at the center of the arena
+  override def forceField: VectorField = (p) => XYVect(
+    (p.x - Arena.width / 2.0) / Arena.width * 10.0,
+    (p.y - Arena.height/ 2.0) / Arena.height * 10.0
+  )
 
   // Air friction
-  override def friction(body: RigidBody): ScalarField = _ => Math.pow(body.velocity.ρ, 2.0) * 5.0E-5
+  override def friction(body: RigidBody): ScalarField = _ => Math.pow(body.velocity.ρ, 2.0) * 5.0E-4
 
   // Rectangular arena on the 1st quadrant
   override def walls: Seq[Shape] = Seq(
     // Ceiling
-    Line((0.0, -1.0), WorldConfig.Arena.height),
+    Line((0.0, -1.0), Arena.height),
     // Left side
     Line((1.0, 0.0), 0.0),
     // Floor
     Line((0.0, 1.0), 0.0),
     // Right side
-    Line((-1.0, 0.0), WorldConfig.Arena.width)
+    Line((-1.0, 0.0), Arena.width)
   )
 
-  override def copy(
-    bodies: Seq[RigidBody] = bodies,
-    timeDelta: Double = timeDelta
-  ): WorldXZGravity = WorldXZGravity(bodies, timeDelta)
+  override def copy(bodies: Seq[RigidBody] = bodies, timeDelta: Double = timeDelta ): WorldSource = WorldSource(bodies, timeDelta)
 }

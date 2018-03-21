@@ -30,10 +30,6 @@ trait Shape extends EasyEquatable[Shape] {
 
   /**
     * Returns collision information if two Shapes collide.
-    *
-    * The left disjunction contains the collision information if
-    * there is a collision, the right disjunction if there is no
-    * collision.
     */
   def collision(that: Shape): Collision = Collision.check(this, that)
 

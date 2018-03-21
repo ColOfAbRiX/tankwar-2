@@ -16,8 +16,10 @@
 
 package com.colofabrix.scala.physix.shapes
 
+import com.colofabrix.scala.math.Vect
+import com.colofabrix.scala.math.VectUtils._
+
 import scala.annotation.tailrec
-import com.colofabrix.scala.math.{ Vect, XYVect }
 
 /**
   * A line segment.
@@ -43,28 +45,21 @@ final case class Segment(p0: Vect, p1: Vect) extends Shape {
 
     /** Calculates the intersection of the segment with the border that it overlaps. */
     protected def intersection(outcode: Int, s: Segment): Vect = {
-      if ((outcode & LEFT) == LEFT)
-        XYVect(
-          viewport.left,
-          s.p0.y + (viewport.left - s.p0.x) * s.slope
-        )
-      else if ((outcode & RIGHT) == RIGHT)
-        XYVect(
-          viewport.right,
-          s.p0.y + (viewport.right - s.p0.x) * s.slope
-        )
-      else if ((outcode & TOP) == TOP)
-        XYVect(
-          s.p0.x + (viewport.top - s.p0.y) / s.slope,
-          viewport.top
-        )
-      else if ((outcode & BOTTOM) == BOTTOM)
-        XYVect(
-          s.p0.x + (viewport.bottom - s.p0.y) / s.slope,
-          viewport.bottom
-        )
-      else
-        throw new IllegalArgumentException("The outcode doesn't represent a segment to cut.")
+      if ((outcode & LEFT) == LEFT) {
+        (viewport.left, s.p0.y + (viewport.left - s.p0.x) * s.slope)
+      }
+      else if ((outcode & RIGHT) == RIGHT) {
+        (viewport.right, s.p0.y + (viewport.right - s.p0.x) * s.slope)
+      }
+      else if ((outcode & TOP) == TOP) {
+        (s.p0.x + (viewport.top - s.p0.y) / s.slope, viewport.top)
+      }
+      else if ((outcode & BOTTOM) == BOTTOM) {
+        (s.p0.x + (viewport.bottom - s.p0.y) / s.slope, viewport.bottom)
+      }
+      else {
+        throw new IllegalArgumentException( "The outcode doesn't represent a segment to cut." )
+      }
     }
 
     /** Clip the given segment into a segment fully contained in a Box. */

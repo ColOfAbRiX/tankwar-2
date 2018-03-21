@@ -65,4 +65,9 @@ object VectUtils {
     def rtRand(scale: Double = 1.0): Vect = vector rtComp { _ * new Random().nextDouble() * scale }
   }
 
+  /**
+    * Converts a tuple into an XYVect
+    */
+  implicit def tuple2xyvect(vect: Tuple2[Double, Double]): Vect = XYVect(vect._1, vect._2)
+
 }

@@ -256,8 +256,8 @@ sealed abstract class Vect extends AnyRef with scalaz.Equal[Vect] {
 
 object Vect {
   /** Zero vector. It's a null vector */
-  def zero = XYVect.zero
+  def zero: Vect = XYVect.zero
 
   /** Arbitrary unit vector */
-  def unit(t: Double) = RTVect.unit(t)
+  def unit(t: Double): Vect = RTVect.unit(t)
 }

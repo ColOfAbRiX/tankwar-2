@@ -22,7 +22,7 @@ import com.colofabrix.scala.gfx.OpenGL
 import com.colofabrix.scala.math.VectUtils.RichVect
 import com.colofabrix.scala.math._
 import com.colofabrix.scala.physix._
-import com.colofabrix.scala.physix.worlds.{ World, WorldXZGravity }
+import com.colofabrix.scala.physix.worlds._
 import com.colofabrix.scala.tankwar.Configuration.{ Simulation => SimConfig, World => WorldConfig }
 import com.colofabrix.scala.tankwar.entities.Tank
 import com.colofabrix.scala.tankwar.managers._
@@ -45,10 +45,10 @@ object TankWar extends LazyLogging {
       Tank(
         mass = new Random().nextDouble() * 5.0,
         position = WorldConfig.Arena.asBox.opposite.xyRand(),
-        velocity = XYVect(-10.0, -10.0).xyRand()
+        velocity = XYVect(-25.0, -10.0).xyRand()
       )
     }
-    val world: World = WorldXZGravity(tanks, SimConfig.timeDelta)
+    val world: World = WorldSink(tanks, SimConfig.timeDelta)
 
     OpenGL.init(
       WorldConfig.Arena.width.toInt,

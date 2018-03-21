@@ -22,6 +22,8 @@ import com.colofabrix.scala.physix.shapes._
 
 /** Information about a collision between objects  */
 trait Collision {
+  def thisShape: Shape
+  def thatShape: Shape
   def flip(): Collision
 }
 
@@ -30,12 +32,8 @@ trait Collision {
   * @param normal Collision normal
   * @param distance Penetration distance
   */
-final case class Overlap(
-  normal: Vect,
-  distance: Double,
-  thisShape: Shape,
-  thatShape: Shape
-) extends Collision {
+final case class Overlap(normal: Vect, distance: Double, thisShape: Shape, thatShape: Shape) extends Collision {
+
   override def flip(): Collision = this.copy(
     normal = normal * -1.0,
     thisShape = this.thatShape,
@@ -49,11 +47,8 @@ final case class Overlap(
   * When two shapes do not penetrate each other
   * @param distance Distance as vector
   */
-final case class Separate(
-  distance: Vect,
-  thisShape: Shape,
-  thatShape: Shape
-) extends Collision {
+final case class Separate(distance: Vect, thisShape: Shape, thatShape: Shape) extends Collision {
+
   override def flip(): Collision = this.copy(
     distance = distance * -1.0,
     thisShape = this.thatShape,

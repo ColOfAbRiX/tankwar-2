@@ -16,10 +16,18 @@
 
 package com.colofabrix.scala.physix.shapes
 
-import com.colofabrix.scala.math.{ DoubleWithAlmostEquals, Vect, XYVect }
+import com.colofabrix.scala.math.VectUtils._
+import com.colofabrix.scala.math.{ DoubleWithAlmostEquals, Vect }
 
 /**
   * An infinite line.
+  *
+  * The line is defined by a normal N and a point Q:
+  *   N = (A, B); Q = (x0, y0)
+  * then these parameters determine the line equation:
+  *   Ax + By + C = 0; C = -(Ax0 + By0)
+  * which written in the explicit form is:
+  *   y = mx + q; m = -A / B; q = (A / B)x0 + y0
   */
 class Line private (
     val normal: Vect,
@@ -34,33 +42,29 @@ class Line private (
   /** Parameter "q" of the line equation y = mx + q */
   val q: Double = -m * point.x + point.y
 
+  /** Returns true if the line is horizontal */
+  val isHorizontal: Boolean = normal.x ==~ 0.0
+
+  /** Returns true if the line is vertical */
+  val isVertical: Boolean = normal.y ==~ 0.0
+
   /** Distance of a point from the line. */
-  def distance(v: Vect): Vect = normal * ((v - point) ∙ normal)
+  def distance(v: Vect): Vect = ((v - point) ∙ normal) * normal
 
   /** Line equation. */
-  def equation(x: Double): Vect = XYVect(x, m * x + q)
+  def equation(x: Double): Vect = (x, m * x + q)
 
   /** Clip the line into a segment fully contained in a Box. */
   def clip(frame: Box): Option[Segment] = {
-    val seg = if (normal.y ==~ 0.0)
-      // When the line is horizontal
-      Segment(
-        XYVect(frame.left, point.y),
-        XYVect(frame.right, point.y)
-      )
-    else if (normal.x ==~ 0.0)
-      // When the line is vertical
-      Segment(
-        XYVect(point.x, frame.bottom),
-        XYVect(point.x, frame.top)
-      )
-    else
-      // Other cases
-      Segment(
-        equation(frame.left),
-        equation(frame.right)
-      )
-
+    val seg = if (isHorizontal) {
+      Segment( (frame.left, point.y), (frame.right, point.y) )
+    }
+    else if (isVertical) {
+      Segment( (point.x, frame.bottom), (point.x, frame.top) )
+    }
+    else {
+      Segment( equation( frame.left ), equation( frame.right ) )
+    }
     seg.clip(frame)
   }
 
@@ -78,7 +82,14 @@ class Line private (
 }
 
 object Line {
-  def apply(normal: Vect, distance: Double): Line = new Line(normal.v, normal * -distance)
+  /**
+    * Creates a Line given a normal and the distance of the normal from the origin. The line created
+    * with this method can only have its norma on the 1st quadrant.
+    */
+  def apply(normal: Vect, distance: Double): Line = new Line(
+    normal.v,
+    distance * normal.xyComp(Math.abs(_))
+  )
 
   def apply(normal: Vect, point: Vect): Line = new Line(normal.v, point)
 }

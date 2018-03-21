@@ -16,7 +16,8 @@
 
 package com.colofabrix.scala.physix.shapes
 
-import com.colofabrix.scala.math.{ Vect, XYVect }
+import com.colofabrix.scala.math.Vect
+import com.colofabrix.scala.math.VectUtils._
 
 /**
   * Axis Aligned Bounding Box
@@ -27,11 +28,11 @@ class Box protected (
 ) extends Shape {
 
   /** The vertices of the Box */
-  val vertices = Seq(
+  val vertices = Seq[Vect](
     bottomLeft,
-    XYVect(bottomLeft.x, topRight.y),
+    (bottomLeft.x, topRight.y),
     topRight,
-    XYVect(topRight.x, bottomLeft.y)
+    (topRight.x, bottomLeft.y)
   )
 
   /** Edges of the Box, built from the vertices. Edges are {Vect} from one vertex to its adjacent one */
@@ -51,10 +52,10 @@ class Box protected (
   require(width > 0.0, "Box width must be positive.")
   require(width > 0.0, "Box height must be positive.")
 
-  override val area = width * height
+  override val area: Double = width * height
 
   /** Center of the Box */
-  val center: Vect = bottomLeft + XYVect(width / 2.0, height / 2.0)
+  val center: Vect = bottomLeft + (width / 2.0, height / 2.0)
 
   /** The vertex that is closest to the origin of the axes. */
   lazy val origin: Vect = vertices.minBy(_.ρ)
@@ -63,10 +64,10 @@ class Box protected (
   lazy val opposite: Vect = vertices.maxBy(_.ρ)
 
   /** Rectangle top-left-most point, in any quadrant of the plane */
-  val topLeft: Vect = XYVect(bottomLeft.x, topRight.y)
+  val topLeft: Vect = (bottomLeft.x, topRight.y)
 
   /** Rectangle bottom-right-most point, in any quadrant of the plane */
-  val bottomRight: Vect = XYVect(topRight.x, bottomLeft.y)
+  val bottomRight: Vect = (topRight.x, bottomLeft.y)
 
   /** Rectangle top-most Y */
   val top: Double = topRight.y
@@ -96,13 +97,13 @@ object Box {
   /** Constructor that uses width, height and centers the Box at a specific point */
   def apply(center: Vect, width: Double, height: Double): Box = {
     Box(
-      XYVect(center.x - width / 2.0, center.y - height / 2.0),
-      XYVect(center.x + width / 2.0, center.y + height / 2.0)
+      (center.x - width / 2.0, center.y - height / 2.0),
+      (center.x + width / 2.0, center.y + height / 2.0)
     )
   }
 
   /** Constructor that uses width, height and starts the box at the origin of the axis. */
-  def apply(width: Double, height: Double): Box = Box(Vect.zero, XYVect(width, height))
+  def apply(width: Double, height: Double): Box = Box(Vect.zero, (width, height))
 
   /** Creates a new Box using any two opposite vertices */
   def apply(p0: Vect, p1: Vect): Box = {
@@ -112,6 +113,6 @@ object Box {
     val bottomX = Math.min(p0.x, p1.x)
     val bottomY = Math.min(p0.y, p1.y)
 
-    return new Box(XYVect(bottomX, bottomY), XYVect(topX, topY))
+    return new Box((bottomX, bottomY), (topX, topY))
   }
 }
